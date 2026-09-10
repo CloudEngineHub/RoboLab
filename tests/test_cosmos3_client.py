@@ -6,6 +6,7 @@ from __future__ import annotations
 import numpy as np
 import pytest
 
+from policies.cosmos3 import client as cosmos3_client
 from policies.cosmos3.client import Cosmos3Client
 from robolab.eval.base_client import InferenceClient
 
@@ -74,6 +75,34 @@ def test_constructor_uses_host_port_and_environment_token(monkeypatch):
 
     assert client._uri == "ws://policy-host:8123"
     assert client._api_token == "environment-token"
+
+
+def test_connect_waits_and_retries_when_server_is_not_ready(monkeypatch):
+    connect_attempts = []
+    sleep_calls = []
+
+    class _StartingTransport:
+        def __init__(self, uri, *, api_token):
+            self.uri = uri
+            self.api_token = api_token
+
+        def connect(self):
+            connect_attempts.append(None)
+            if len(connect_attempts) == 1:
+                raise ConnectionRefusedError("server is starting")
+
+    monkeypatch.setattr(cosmos3_client, "MsgPackWebSocketTransport", _StartingTransport)
+    monkeypatch.setattr(cosmos3_client.time, "sleep", sleep_calls.append)
+    client = _client_without_connection()
+    client._uri = "ws://policy-host:8123"
+    client._api_token = "token"
+
+    transport = client._connect()
+
+    assert len(connect_attempts) == 2
+    assert sleep_calls == [5]
+    assert transport.uri == client._uri
+    assert transport.api_token == client._api_token
 
 
 def test_parallel_environments_receive_distinct_stable_session_ids():

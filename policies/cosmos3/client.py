@@ -3,6 +3,7 @@
 
 import logging
 import os
+import time
 
 import numpy as np
 import torch
@@ -48,10 +49,15 @@ class Cosmos3Client(InferenceClient):
         print(f"[{self.__class__.__name__}] Connected to {display}.")
 
     def _connect(self) -> MsgPackWebSocketTransport:
-        """ """
+        """Connect, waiting for the policy server to start accepting connections."""
         transport = MsgPackWebSocketTransport(self._uri, api_token=self._api_token)
-        transport.connect()
-        return transport
+        while True:
+            try:
+                transport.connect()
+                return transport
+            except ConnectionRefusedError:
+                logger.info("Still waiting for server at %s...", self._uri)
+                time.sleep(5)
 
     def _infer_with_retry(self, request: dict, max_retries: int = 3) -> object:
         """ """
