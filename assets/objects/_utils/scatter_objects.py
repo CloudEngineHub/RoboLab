@@ -47,17 +47,25 @@ def main():
     from isaacsim import SimulationApp
     app = SimulationApp({'headless': True})
 
-    # Now import the rest. Use the Isaac Sim 6 / Isaac Lab 3 APIs rather than
-    # the deprecated isaacsim.core.* and isaacsim.sensors.camera extensions.
-    import isaaclab.sim as sim_utils
-    from isaaclab.sim import SimulationCfg, SimulationContext
-    from isaacsim.core.experimental.utils import app as app_utils
-    from isaacsim.core.rendering_manager import ViewportManager
-
-    app_utils.enable_extension("isaacsim.sensors.experimental.rtx")
-    from isaacsim.sensors.experimental.rtx import CameraSensor, RtxCamera
     from PIL import Image
     from pxr import Gf, UsdGeom
+    from robolab.core.utils.isaaclab_compat import ISAACLAB_USES_XYZW
+
+    if ISAACLAB_USES_XYZW:
+        import isaaclab.sim as prim_utils
+        from isaaclab.sim import SimulationCfg, SimulationContext
+        from isaacsim.core.experimental.utils import app as app_utils
+        from isaacsim.core.rendering_manager import ViewportManager
+
+        app_utils.enable_extension("isaacsim.sensors.experimental.rtx")
+        from isaacsim.sensors.experimental.rtx import CameraSensor, RtxCamera
+    else:
+        import omni.usd
+        from isaacsim.core.api import World
+        from isaacsim.core.api.objects.ground_plane import GroundPlane
+        from isaacsim.core.utils import prims as prim_utils
+        from isaacsim.core.utils.viewports import set_camera_view
+        from isaacsim.sensors.camera import Camera
 
     # Setup paths
     script_dir = Path(__file__).parent
@@ -106,8 +114,12 @@ def main():
 
     # Create a new stage
     print("\nCreating new USD stage...")
-    sim_utils.create_new_stage()
-    stage = sim_utils.get_current_stage()
+    if ISAACLAB_USES_XYZW:
+        prim_utils.create_new_stage()
+        stage = prim_utils.get_current_stage()
+    else:
+        omni.usd.get_context().new_stage()
+        stage = omni.usd.get_context().get_stage()
 
     # Set up world and default prim
     world_prim = stage.DefinePrim("/World", "Xform")
@@ -286,12 +298,15 @@ def main():
 
     # Add ground plane
     print("\nAdding ground plane...")
-    ground_cfg = sim_utils.GroundPlaneCfg(size=(50.0, 50.0))
-    ground_cfg.func("/World/GroundPlane", ground_cfg, translation=(0.0, 0.0, 0.0))
+    if ISAACLAB_USES_XYZW:
+        ground_cfg = prim_utils.GroundPlaneCfg(size=(50.0, 50.0))
+        ground_cfg.func("/World/GroundPlane", ground_cfg, translation=(0.0, 0.0, 0.0))
+    else:
+        GroundPlane(prim_path="/World/GroundPlane", z_position=0.0, size=50)
 
     # Add lighting
     print("Adding lighting...")
-    sim_utils.create_prim(
+    prim_utils.create_prim(
         "/World/DistantLight",
         "DistantLight",
         attributes={
@@ -304,7 +319,7 @@ def main():
         }
     )
 
-    sim_utils.create_prim(
+    prim_utils.create_prim(
         "/World/DomeLight",
         "DomeLight",
         attributes={
@@ -335,7 +350,10 @@ def main():
 
     # Initialize world
     print("\nInitializing world...")
-    world = SimulationContext(SimulationCfg(dt=0.0167, render_interval=1))
+    if ISAACLAB_USES_XYZW:
+        world = SimulationContext(SimulationCfg(dt=0.0167, render_interval=1))
+    else:
+        world = World(physics_dt=0.0167, rendering_dt=1 / 60)
     world.reset()
 
     # Setup camera - position to see all objects from the front
@@ -350,18 +368,26 @@ def main():
     print(f"Camera target: {camera_target}")
 
     resolution = tuple(args.resolution)
-    rtx_camera = RtxCamera("/OmniverseKit_Persp", tick_rate=20.0)
-    camera = CameraSensor(
-        rtx_camera,
-        resolution=(resolution[1], resolution[0]),
-        annotators=["rgb"],
-    )
-
-    ViewportManager.set_camera_view(
-        "/OmniverseKit_Persp",
-        eye=list(camera_position),
-        target=list(camera_target),
-    )
+    if ISAACLAB_USES_XYZW:
+        rtx_camera = RtxCamera("/OmniverseKit_Persp", tick_rate=20.0)
+        camera = CameraSensor(
+            rtx_camera,
+            resolution=(resolution[1], resolution[0]),
+            annotators=["rgb"],
+        )
+        ViewportManager.set_camera_view(
+            "/OmniverseKit_Persp",
+            eye=list(camera_position),
+            target=list(camera_target),
+        )
+    else:
+        camera = Camera(prim_path="/OmniverseKit_Persp", resolution=resolution, frequency=20)
+        set_camera_view(
+            eye=np.array(camera_position),
+            target=np.array(camera_target),
+            camera_prim_path="/OmniverseKit_Persp",
+        )
+        camera.initialize()
 
     # Set camera intrinsics for good framing
     camera_prim = stage.GetPrimAtPath("/OmniverseKit_Persp")
@@ -379,12 +405,14 @@ def main():
         if i % 10 == 0:
             print(f"  Rendering frame {i}/{args.skip_frames}...")
         if i >= args.skip_frames:
-            # Capture the frame from the Isaac Sim 6 RTX sensor API.
-            rgb_data, _ = camera.get_data("rgb")
-            if rgb_data is None:
-                i += 1
-                continue
-            rgb_image = rgb_data.numpy()
+            if ISAACLAB_USES_XYZW:
+                rgb_data, _ = camera.get_data("rgb")
+                if rgb_data is None:
+                    i += 1
+                    continue
+                rgb_image = rgb_data.numpy()
+            else:
+                rgb_image = camera.get_rgba()[:, :, :3]
 
             # Save image
             pil_image = Image.fromarray(rgb_image.astype(np.uint8))
@@ -414,7 +442,10 @@ def main():
     print(f"✓ Placement info saved to: {info_path}")
 
     # Cleanup
-    SimulationContext.clear_instance()
+    if ISAACLAB_USES_XYZW:
+        SimulationContext.clear_instance()
+    else:
+        omni.usd.get_context().close_stage()
     app.close()
 
     print("\nDone!")

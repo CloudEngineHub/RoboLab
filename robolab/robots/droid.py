@@ -29,7 +29,18 @@ from robolab.core.actions.isaaclab_compat import (
     RobolabDifferentialInverseKinematicsActionCfg as DifferentialInverseKinematicsActionCfg,
 )
 from robolab.core.environments.scene_fixture import FRANKA_TABLE_FIXTURE
-from robolab.core.utils.isaaclab_compat import as_torch, quat_isaaclab_to_wxyz
+from robolab.core.utils.isaaclab_compat import (
+    ISAACLAB_USES_XYZW,
+    as_torch,
+    quat_isaaclab_to_wxyz,
+)
+
+DROID_USD_PATH = os.path.join(
+    ROBOTS_DIR,
+    "franka_robotiq_2f_85_isaac60.usd"
+    if ISAACLAB_USES_XYZW
+    else "franka_robotiq_2f_85_flattened.usd",
+)
 
 # Offset of the end-effector control frame relative to base_link. Used by:
 #   - DroidCfg.frames "eef_frame" (FrameTransformer publishes this pose for downstream code)
@@ -73,7 +84,7 @@ class DroidCfg:
             # internal prototype roots remain instanceable.  This derivative keeps
             # the articulation/collision structure intact and de-instances only the
             # eight Robotiq visual prototype roots.
-            usd_path=os.path.join(ROBOTS_DIR, "franka_robotiq_2f_85_isaac60.usd"),
+            usd_path=DROID_USD_PATH,
             activate_contact_sensors=True,
             rigid_props=sim_utils.RigidBodyPropertiesCfg(
                 disable_gravity=True,
@@ -358,8 +369,8 @@ class DroidIKActionCfg:
     error in root frame but multiplies the rotational Jacobian by R_offset,
     leaving the bases inconsistent — the IK reaches position cleanly, then
     drifts in orientation and diverges. (See run_abs_ik_demo.py for the
-    command-side conversion.) The relative IK path is unaffected, so
-    DroidRelIKActionCfg keeps body_offset.rot.
+    command-side conversion.) The relative IK path also tracks base_link
+    directly, with an explicitly authored identity offset.
 
     Note:
         if self.cfg.command_type == "position", action_dim = 3, (x, y, z)
@@ -405,6 +416,11 @@ class DroidRelIKActionCfg:
         scale=0.5,
         body_offset=DifferentialInverseKinematicsActionCfg.OffsetCfg(
             pos=[0.0, 0.0, 0.0],
+            # RoboLab-authored rotations are WXYZ. Spell out identity instead
+            # of inheriting Isaac Lab 3's XYZW default: prepare_env_cfg() must
+            # convert this to runtime XYZW [0, 0, 0, 1], not a 180-degree Z
+            # rotation [0, 0, 1, 0].
+            rot=(1.0, 0.0, 0.0, 0.0),
             # rot=(0.5, -0.5, 0.5, -0.5),  # Match eef_frame: rotates base_link to the EE control frame.
         ),
         # Robotiq 2F-85 max height base flange -> fingertip is 162.8mm (per Robotiq spec).

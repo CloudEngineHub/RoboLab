@@ -12,9 +12,9 @@
 # Uses git short SHA as tag by default
 ./docker/build_docker.sh
 
-# Older simulator stacks remain available
-./docker/build_docker.sh --isaac50
+# Alternative simulator stacks
 ./docker/build_docker.sh --isaac51
+./docker/build_docker.sh --isaac60
 
 # Custom tag
 ./docker/build_docker.sh my-tag
@@ -68,7 +68,7 @@ docker run --rm -it \
 
 ## What's in the image
 
-- **Base**: `nvcr.io/nvidia/isaac-lab:3.0.0-beta2` (Isaac Sim 6.0) by default; select the legacy stacks with `build_docker.sh --isaac50` or `--isaac51`
+- **Base**: `nvcr.io/nvidia/isaac-lab:2.2.0` (Isaac Sim 5.0) by default; select Isaac Sim 5.1 with `--isaac51` or Isaac Sim 6 with `--isaac60`
 - **Code**: `robolab/`, `scripts/`, `examples/`, `tests/`
 - **Assets**: `assets/` (~6.5GB)
 - **Python packages**: Everything in `requirements.txt`, installed via `pip install -e .`

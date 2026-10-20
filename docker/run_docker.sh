@@ -5,7 +5,7 @@
 ROBOLAB_DIR=$( cd $( dirname ${BASH_SOURCE[0]} )/.. && pwd )
 
 IMAGE_NAME="${ROBOLAB_REGISTRY:-robolab}"
-IMAGE_TAG="${1:-$(git rev-parse --short HEAD)-isaac60}"
+IMAGE_TAG="${1:-$(git rev-parse --short HEAD)}"
 
 xhost +local:root
 docker run \

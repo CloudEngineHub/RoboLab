@@ -1,7 +1,8 @@
 # Isaac Sim 6 support
 
 RoboLab supports Isaac Sim 6.0.1 with the Isaac Lab 3.0 beta 2 patch 1 stack.
-This is the recommended stack for RTX PRO 5000/6000 and other recent GPUs.
+This opt-in stack provides a path for recent GPUs and drivers while preserving
+Isaac Sim 5.0 as RoboLab's default.
 
 ## Install
 
@@ -21,7 +22,8 @@ For the container image:
 ./docker/build_docker.sh --isaac60
 ```
 
-The default Docker base is `nvcr.io/nvidia/isaac-lab:3.0.0-beta2`.
+The `--isaac60` build uses `nvcr.io/nvidia/isaac-lab:3.0.0-beta2`; omitting the
+flag keeps RoboLab's Isaac Sim 5.0 default.
 
 ## Compatibility design
 
@@ -76,6 +78,9 @@ driver/GPU before producing benchmark results:
 ```bash
 uv run python examples/run_kinova_jointpos.py --headless --num-steps 180
 uv run python examples/run_abs_ik_demo.py --headless
+uv run python scripts/preflight_tasks.py --headless --task RubiksCubeAndBananaTask
+# Full resumable task-suite preflight:
+uv run python scripts/preflight_tasks.py --headless --report output/isaac60_preflight.jsonl
 ```
 
 Isaac Lab 3.0 is still a beta line. NVIDIA's 3.0 beta release notes list a

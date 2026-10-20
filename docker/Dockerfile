@@ -1,11 +1,13 @@
-# IsaacLab/IsaacSim stack is selected by the base image tag. The default is
-# Isaac Lab 3.0 beta 2 / Isaac Sim 6.0; 2.2.0 and 2.3.0 remain supported.
+# IsaacLab/IsaacSim stack is selected by the base image tag:
+#   2.2.0        -> Isaac Lab 2.2.0 / Isaac Sim 5.0 (default)
+#   2.3.0        -> Isaac Lab 2.3.x / Isaac Sim 5.1
+#   3.0.0-beta2  -> Isaac Lab 3.0 beta 2 / Isaac Sim 6.0
 # The project's isaac extras are NOT installed here: the
 # base image already provides the matching IsaacLab/IsaacSim, so `pip install
 # -e .` only pulls the non-isaac deps.
-ARG ISAACLAB_TAG=3.0.0-beta2
+ARG ISAACLAB_TAG=2.2.0
 FROM nvcr.io/nvidia/isaac-lab:${ISAACLAB_TAG}
-ARG ROBOLAB_RUNTIME_USER=1000:1000
+ARG ROBOLAB_RUNTIME_USER=0:0
 
 # Temporarily elevate only for system packages; Isaac Lab 3 defaults to UID 1000.
 USER 0:0

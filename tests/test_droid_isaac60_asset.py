@@ -8,7 +8,6 @@ import pytest
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 ASSET = REPO_ROOT / "assets" / "robots" / "franka_robotiq_2f_85_isaac60.usd"
-DROID_CONFIG = REPO_ROOT / "robolab" / "robots" / "droid.py"
 GRIPPER_ROOT = "/panda/Gripper/Robotiq_2F_85"
 GRIPPER_LINKS = (
     "base_link",
@@ -23,10 +22,17 @@ GRIPPER_LINKS = (
 )
 
 
-def test_droid_config_uses_isaac60_rendering_asset():
+def test_droid_config_selects_version_specific_rendering_asset():
+    from robolab.core.utils.isaaclab_compat import ISAACLAB_USES_XYZW
+    from robolab.robots.droid import DROID_USD_PATH
+
     assert ASSET.is_file()
-    source = DROID_CONFIG.read_text()
-    assert '"franka_robotiq_2f_85_isaac60.usd"' in source
+    expected_asset = (
+        ASSET
+        if ISAACLAB_USES_XYZW
+        else REPO_ROOT / "assets" / "robots" / "franka_robotiq_2f_85_flattened.usd"
+    )
+    assert Path(DROID_USD_PATH) == expected_asset
 
 
 def test_isaac60_asset_preserves_robot_structure_without_instanceable_visuals():

@@ -32,7 +32,7 @@ See the [Ecosystem](docs/ecosystem.md) page for projects built on RoboLab.
 
 ## Getting Started
 
-Requires [uv](https://docs.astral.sh/uv/getting-started/installation/) and a system `ffmpeg` (used for video recording). The Isaac Sim/Isaac Lab stack is selected with a mutually-exclusive extra. `isaac60` is the default documented path; `isaac50` and `isaac51` remain available for existing experiments. See [Isaac Sim 6 support](docs/isaac_sim_6.md) and [Requirements](#requirements).
+Requires [uv](https://docs.astral.sh/uv/getting-started/installation/) and a system `ffmpeg` (used for video recording). The Isaac Sim/Isaac Lab stack is selected with a mutually-exclusive extra: `isaac50` (the default), `isaac51`, or `isaac60`. See [Isaac Sim 6 support](docs/isaac_sim_6.md) and [Requirements](#requirements).
 
 ### Installation
 
@@ -40,18 +40,19 @@ Requires [uv](https://docs.astral.sh/uv/getting-started/installation/) and a sys
 sudo apt install ffmpeg
 git clone <repo_url>
 cd robolab
-uv venv --python 3.12
+uv venv --python 3.11
 source .venv/bin/activate
-uv sync --extra isaac60          # Isaac Sim 6.0.1 / Isaac Lab 3.0 beta
-# uv sync --extra isaac50        # Isaac Sim 5.0 / Isaac Lab 2.2.0 (Python 3.11)
+uv sync --extra isaac50          # Isaac Sim 5.0 / Isaac Lab 2.2.0 (default)
 # uv sync --extra isaac51        # Isaac Sim 5.1 / Isaac Lab 2.3.2.post1 (Python 3.11)
+# uv sync --python 3.12 --extra isaac60  # Isaac Sim 6.0.1 / Isaac Lab 3.0 beta
 ```
 
 The stacks cannot coexist in one environment. To keep multiple versions available, install each into its own venv:
 
 ```bash
-UV_PROJECT_ENVIRONMENT=.venv-60 uv sync --python 3.12 --extra isaac60
+UV_PROJECT_ENVIRONMENT=.venv-50 uv sync --python 3.11 --extra isaac50
 UV_PROJECT_ENVIRONMENT=.venv-51 uv sync --python 3.11 --extra isaac51
+UV_PROJECT_ENVIRONMENT=.venv-60 uv sync --python 3.12 --extra isaac60
 ```
 
 Verify installation:
@@ -169,8 +170,8 @@ Full documentation is at **[docs/README.md](docs/README.md)**, covering:
 
 | Dependency | Version |
 |---|---|
-| Isaac Sim | 6.0.1 (default), 5.0, or 5.1 |
-| Isaac Lab | 3.0 beta 2 patch 1, 2.2.0, or 2.3.2.post1 |
+| Isaac Sim | 5.0 (default), 5.1, or 6.0.1 |
+| Isaac Lab | 2.2.0 (default), 2.3.2.post1, or 3.0 beta 2 patch 1 |
 | Python | 3.12 for Isaac Sim 6; 3.11 for Isaac Sim 5 |
 | Linux | Ubuntu 22.04+ |
 
