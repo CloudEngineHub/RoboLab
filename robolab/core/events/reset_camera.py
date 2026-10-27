@@ -244,6 +244,11 @@ def reset_camera_pose_absolute(
         orientation: The target orientation as quaternion (w, x, y, z). If None, orientation is unchanged.
     """
     names = _parse_camera_names(camera_names)
+    # Public input is WXYZ. Convert once so every camera gets the same runtime
+    # orientation; converting inside the loop would permute it again on Lab 3.
+    runtime_orientation = (
+        quat_wxyz_to_isaaclab(orientation) if orientation is not None else None
+    )
 
     for camera_name in names:
         if camera_name not in env.scene.sensors:
@@ -270,9 +275,8 @@ def reset_camera_pose_absolute(
         else:
             positions = current_positions
 
-        if orientation is not None:
-            orientation = quat_wxyz_to_isaaclab(orientation)
-            orientations = torch.tensor([orientation], device=device).expand(num_envs, -1)
+        if runtime_orientation is not None:
+            orientations = torch.tensor([runtime_orientation], device=device).expand(num_envs, -1)
         else:
             orientations = current_orientations
 
