@@ -12,6 +12,7 @@
 
 ## News
 
+- **[2026/10/27]** 🚀 Added opt-in support for **Isaac Lab 3.0 beta and Isaac Sim 6.0.1**, including simulator compatibility updates and DROID rendering fixes. Isaac Sim 5.0 remains the default. See the [setup guide](docs/isaac_sim_6.md). Thanks to Meenal Parakh, Yannick Metz, and Finn Metz!
 - **[2026/10/18]** 🔥 Added [**Astranomy**](https://research.nvidia.com/labs/srl/projects/astranomy/) policy code, using general-purpose models (such as GPT-6 Astra) as a native robot policy.
 - **[2026/10/13]** 🔥 [**LADDER**](https://ladder.insait.ai/) introduces RoboLab-Long, a suite of 44 tasks for evaluating long-horizon manipulation, as part of a 145-task benchmark spanning three simulation suites. See [Task Libraries](docs/ecosystem.md#task-libraries).
 - **[2026/08/19]** 🤖 [**DROID+**](https://github.com/NVlabs/DroidPlus) is released: A simple DROID hardware stack. Your RoboLab policy setup will also work with DROID+.
