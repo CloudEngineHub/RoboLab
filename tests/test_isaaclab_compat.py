@@ -101,7 +101,21 @@ def test_ik_configs_author_wxyz_identity(monkeypatch, uses_xyzw, module_name, cl
 def test_robot_root_and_frame_rotations_round_trip(monkeypatch, uses_xyzw, module_name, class_name):
     from importlib import import_module
 
-    cfg = getattr(import_module(f"robolab.robots.{module_name}"), class_name)()
+    from isaaclab.utils import configclass
+
+    from robolab.core.environments.config import generate_scene_env_cfg
+
+    @configclass
+    class EmptyTaskScene:
+        pass
+
+    class TestTask:
+        scene = EmptyTaskScene
+
+    robot_cfg = getattr(import_module(f"robolab.robots.{module_name}"), class_name)
+    # Resolve robot metadata just as environment construction does. A raw robot
+    # config still contains the immutable TableFixtureCfg authoring label.
+    cfg = generate_scene_env_cfg(TestTask, robot_cfg)(num_envs=1, env_spacing=2.0)
     before = deepcopy(cfg.to_dict())
     assert cfg.robot.init_state.rot == (1.0, 0.0, 0.0, 0.0)
     frame_sensors = [cfg.frames]
