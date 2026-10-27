@@ -27,6 +27,8 @@ Coordinate frames for observations, actions, and recorded data are a contract,
 not a convention — see [frames.md](frames.md). In short: EE observations and
 recordings are relative to the robot's root link, Cartesian actions are always
 interpreted in the robot-root frame, and scene/object data is env-local.
+Author config rotations explicitly in WXYZ, including identity initial states
+and frame/IK offsets; see [authoring config rotations](frames.md#authoring-config-rotations).
 
 ### Table Fixture
 

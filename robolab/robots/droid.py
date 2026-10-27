@@ -150,18 +150,23 @@ class DroidCfg:
     # Per-link frame visualization for debugging. EE pose still comes from articulation
     # body state (faster); this sensor is purely for debug rendering. Flip debug_vis to
     # True to render RGB axes at every tracked link in the viewport.
+    # Source and target offsets are authored in WXYZ, even when identity.
+    # Omitting either inherits Lab 3's XYZW default (see docs/frames.md).
     frames = FrameTransformerCfg(
+        source_frame_offset=OffsetCfg(rot=(1.0, 0.0, 0.0, 0.0)),
         prim_path="{ENV_REGEX_NS}/robot/panda_link0",
         debug_vis=False,
         visualizer_cfg=_frame_marker_cfg,
         target_frames=[
             FrameTransformerCfg.FrameCfg(
+                offset=OffsetCfg(rot=(1.0, 0.0, 0.0, 0.0)),
                 prim_path=f"{{ENV_REGEX_NS}}/robot/panda_link{i}",
                 name=f"panda_link{i}",
             )
             for i in range(8)
         ] + [
             FrameTransformerCfg.FrameCfg(
+                offset=OffsetCfg(rot=(1.0, 0.0, 0.0, 0.0)),
                 prim_path="{ENV_REGEX_NS}/robot/Gripper/Robotiq_2F_85/base_link",
                 name="gripper_base",
             ),
@@ -383,7 +388,9 @@ class DroidIKActionCfg:
         body_name="base_link",  # Robotiq 2F-85 base flange (gripper mount); matches ee_pos/ee_quat helpers
         controller=DifferentialIKControllerCfg(command_type="pose", use_relative_mode=False, ik_method="dls"),
         scale=1.0,
-        body_offset=DifferentialInverseKinematicsActionCfg.OffsetCfg(pos=[0.0, 0.0, 0.0]),
+        # Explicit WXYZ identity keeps this control frame aligned with base_link
+        # when prepare_env_cfg() converts the config for Lab 3.
+        body_offset=DifferentialInverseKinematicsActionCfg.OffsetCfg(rot=(1.0, 0.0, 0.0, 0.0), pos=[0.0, 0.0, 0.0]),
         # Robotiq 2F-85 max height base flange -> fingertip is 162.8mm (per Robotiq spec).
         # Uncomment to control the fingertip plane instead of the base flange.
         # body_offset=DifferentialInverseKinematicsActionCfg.OffsetCfg(pos=[0.0, 0.0, 0.1628]),

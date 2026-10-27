@@ -23,6 +23,9 @@ from robolab.core.utils.isaaclab_compat import as_torch, quat_isaaclab_to_wxyz
 # Actions
 ########################################################
 
+# Both IK configs author body offsets in WXYZ. Keep identity explicit: Lab 3
+# defaults are XYZW, while prepare_env_cfg() expects WXYZ (docs/frames.md).
+
 @configclass
 class FrankaIKActionCfg:
     """Absolute end-effector pose control via differential IK.
@@ -40,7 +43,7 @@ class FrankaIKActionCfg:
         body_name="panda_hand",
         controller=DifferentialIKControllerCfg(command_type="pose", use_relative_mode=False, ik_method="dls"),
         scale=0.5,
-        body_offset=DifferentialInverseKinematicsActionCfg.OffsetCfg(pos=[0.0, 0.0, 0.0]),
+        body_offset=DifferentialInverseKinematicsActionCfg.OffsetCfg(rot=(1.0, 0.0, 0.0, 0.0), pos=[0.0, 0.0, 0.0]),
         # body_offset=DifferentialInverseKinematicsActionCfg.OffsetCfg(pos=[0.0, 0.0, -0.107]),
     )
 
@@ -68,7 +71,7 @@ class FrankaRelIKActionCfg:
         body_name="panda_hand",
         controller=DifferentialIKControllerCfg(command_type="pose", use_relative_mode=True, ik_method="dls"),
         scale=0.5,
-        body_offset=DifferentialInverseKinematicsActionCfg.OffsetCfg(pos=[0.0, 0.0, 0.0]),
+        body_offset=DifferentialInverseKinematicsActionCfg.OffsetCfg(rot=(1.0, 0.0, 0.0, 0.0), pos=[0.0, 0.0, 0.0]),
         # body_offset=DifferentialInverseKinematicsActionCfg.OffsetCfg(pos=[0.0, 0.0, -0.107]),
     )
 

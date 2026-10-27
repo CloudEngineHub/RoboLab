@@ -19,6 +19,20 @@ Isaac Lab 3 uses `(x, y, z, w)` internally. RoboLab converts at simulator,
 math, action, and recording boundaries so this public contract and recordings
 remain unchanged across Isaac Sim 5 and 6.
 
+### Authoring config rotations
+
+Explicitly author every config rotation in WXYZ, including identity
+`rot=(1.0, 0.0, 0.0, 0.0)`. Do this for asset initial states, IK body offsets,
+and both source and target frame-sensor offsets. When omitting a nested
+config would inherit a rotation (for example `source_frame_offset` or
+`init_state`), supply that config explicitly as well.
+
+Isaac Lab 3 defaults are already XYZW. Passing those defaults through
+`prepare_env_cfg()` would convert them again. Do not infer the convention
+from the values: `(0, 0, 0, 1)` is a valid WXYZ half-turn as well as XYZW
+identity. `prepare_env_cfg()` converts the completed WXYZ config once;
+recording serialization converts it back to WXYZ.
+
 ## Robot placement
 
 Where a robot's root goes is part of the robot declaration, not an assumption:

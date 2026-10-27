@@ -187,9 +187,17 @@ def _convert_config_rotations(value: Any, *, to_isaaclab: bool, seen: set[int]) 
 
 
 def prepare_env_cfg(env_cfg: Any) -> Any:
-    """Convert authored WXYZ config rotations for Isaac Lab 3, once per config."""
+    """Convert authored WXYZ config rotations for Isaac Lab 3, once per config.
+
+    Every incoming ``rot`` must be explicitly authored in WXYZ, including
+    identity rotations in nested initial-state and sensor-offset configs.
+    Isaac Lab defaults depend on the installed version; their convention
+    cannot be inferred from their numeric values.
+    """
     if not ISAACLAB_USES_XYZW or getattr(env_cfg, "_robolab_quaternions_prepared", False):
         return env_cfg
+    # Convert the completed authored config at the simulator boundary; individual
+    # config constructors must not pre-convert. See docs/frames.md.
     _convert_config_rotations(env_cfg, to_isaaclab=True, seen=set())
     env_cfg._robolab_quaternions_prepared = True
     return env_cfg

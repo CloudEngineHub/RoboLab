@@ -156,6 +156,7 @@ def _scrape_scene_cached(scene_path: str, objects_of_interest_tuple: tuple = Non
                 continue
 
             asset = AssetBaseCfg(
+                init_state=AssetBaseCfg.InitialStateCfg(rot=(1.0, 0.0, 0.0, 0.0)),
                 prim_path=f"{{ENV_REGEX_NS}}/scene/{name}",
                 spawn=None,
             )
@@ -174,6 +175,7 @@ def _scrape_scene_cached(scene_path: str, objects_of_interest_tuple: tuple = Non
                 continue
 
             asset = AssetBaseCfg(
+                init_state=AssetBaseCfg.InitialStateCfg(rot=(1.0, 0.0, 0.0, 0.0)),
                 prim_path=f"{{ENV_REGEX_NS}}/scene/{name}",
                 spawn=None,
             )

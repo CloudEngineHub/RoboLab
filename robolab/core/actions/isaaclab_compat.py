@@ -20,6 +20,7 @@ class RobolabDifferentialInverseKinematicsAction(DifferentialInverseKinematicsAc
         if ISAACLAB_USES_XYZW and is_absolute_pose:
             external_actions = actions
             actions = actions.clone()
+            # Policy pose commands are XYZ + WXYZ; only the Lab 3 controller sees XYZW.
             actions[..., 3:7] = external_actions[..., [4, 5, 6, 3]]
             super().process_actions(actions)
             # Recordings and raw-action diagnostics remain version-independent.

@@ -78,7 +78,7 @@ Each `run_{i}.hdf5` file contains the following hierarchical structure (`h5glanc
   │ │ └cameras                              # one entry per camera sensor in the scene
   │ │   ├over_shoulder_left_camera
   │ │   │ ├position    [float32: 1 × 3]     # camera position, relative to env origin
-  │ │   │ └orientation [float32: 1 × 4]     # world-frame quaternion (ROS, xyzw)
+  │ │   │ └orientation [float32: 1 × 4]     # world-frame quaternion (ROS axes, wxyz)
   │ │   └wrist_cam
   │ │     ├position    [float32: 1 × 3]
   │ │     └orientation [float32: 1 × 4]
